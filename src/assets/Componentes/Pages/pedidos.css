@@ -1,0 +1,45 @@
+
+.prod{
+    background-color: #D9D9D9;
+    padding: 10px 20px;
+    position: relative;
+    overflow: hidden;
+
+    margin: 20px 0;
+}
+.seta{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.detalhes{
+    position:fixed;
+    left: 0;
+    right: 0;
+    margin: auto;
+    max-width: 1066px;
+    background-color: brown;
+
+    transition: 1s;
+
+    z-index: 999;
+
+}
+.detalhes h1{
+    margin: 10px;
+    padding: 10px;
+}
+.detalhes li{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+button{
+    width: 50px;
+    padding: 20px;
+}
+.enviar{
+    background-color: green;
+    text-align: center;
+    width: 100px;
+}
