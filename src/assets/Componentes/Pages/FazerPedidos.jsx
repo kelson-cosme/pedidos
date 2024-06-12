@@ -1,10 +1,9 @@
 
 import { initializeApp } from 'firebase/app';
-import { getFirestore, doc, getDocs, collection, documentId } from "firebase/firestore";
+import { getFirestore,addDoc, getDocs, collection, documentId } from "firebase/firestore";
 import { useEffect, useState } from 'react';
 
 import "../Pages/pedidos.css"
-import { set } from 'firebase/database';
 
 const firebaseConfig = {
     apiKey: import.meta.env.VITE_API_KEY,
@@ -25,12 +24,15 @@ function FazerP() {
     const [produtos, setProdutos] = useState()
     const [verificador, setVerificador] = useState()
     const [escolher, setEscolher] = useState("")
-   
+    const [pedidos, setPedidos] = useState([])
+    const [quantidade, setQuantidade] = useState([])
+    const [confPedidos, setConfiPedidos] = useState()
+    const [mesa, setMesa] = useState()
     
     useEffect ( () => {
         async function getProdutos(db){
 
-        const querySnapshot = await getDocs(collection(db, "produtos"));
+        const querySnapshot = await getDocs(collection(db, "produtos", ));
 
         querySnapshot.forEach((doc) => {
             setProdutos(doc.data())
@@ -39,8 +41,22 @@ function FazerP() {
         getProdutos(db)
     }, []);
 
+    async function confirmar() {
+        await addDoc(collection(db, "pedidosAbertos"), {
+            mesa: mesa,
+            pedidos: pedidos
+        });
+        alert("Pedido confirmado!");
+        window.location.reload(true);
+
+    }
+
+
+
     let tipos = ["porcoes", "refrigerantes"]
 
+
+    //função para quando clicar na seta, fechar o quadrado de pedidos
     function fechar(event){
         const pegarId = event.target.id
         setEscolher(tipos[pegarId])
@@ -55,30 +71,32 @@ function FazerP() {
 
         } else {
             setVerificador(false)
+
         }
 
     }
 
-    const [pedidos, setPedidos] = useState([])
-    const [quantidade, setQuantidade] = useState([])
+   
 
+    //enviar o pedido completo
     function enviar(){
 
         setVerificador(true)
 
-        let configmarPedidos = document.getElementById("configmarPedidos")
+        let confirmarPedidos = document.getElementById("configmarPedidos")
+        setConfiPedidos(confirmarPedidos)
 
-        configmarPedidos.innerHTML = pedidos.map( (doc) => (
+        confirmarPedidos.innerHTML = pedidos.map( (doc) => (
+            
             `<h1>${doc.name} : ${doc.quantidade} </h1>`
         ))
 
+        
     }
     
-
+//verificar a marcação do checkbox
     function marcarPedidos(e) {
         const { name, checked } = e.target;
-
-        console.log(e.target)
 
         setPedidos(prevPedidos => {
             if (checked) {
@@ -88,7 +106,8 @@ function FazerP() {
             }
         });
     }
-        
+
+        //Atualizar a quantidade do input "quantidade"
             function atualizarQuantidade(e) {
                 const { name, value } = e.target;
                 setQuantidade(prevQuantidade => ({
@@ -98,7 +117,7 @@ function FazerP() {
                 if(quantidade != ""){
                     setPedidos(prevPedidos => {
                         const pedidoIndex = prevPedidos.findIndex(pedido => pedido.name === name); //encontrar valor no array
-                        if (pedidoIndex > -1) {
+                        if (pedidoIndex >= -1) {
                             const updatedPedidos = [...prevPedidos];
                             updatedPedidos[pedidoIndex].quantidade = value; //atualizar pedidos
                             return updatedPedidos;
@@ -110,11 +129,37 @@ function FazerP() {
                 
             }
 
+            function mesas(e){
+                let escolhaMesa = e.target
+                setMesa(escolhaMesa.innerText)
+                console.log(escolhaMesa)
+
+                if(escolhaMesa.className == ""){
+                    escolhaMesa.classList.add("active")
+                } else{
+                    escolhaMesa.classList.remove("active")
+
+                }
+                
+            }
 
     return (
         <section className='produtos'>
+                <h1 className='titulo'>Mesas</h1>
+
+              
+            <ul onClick={mesas} className='mesas'>
+                <li >1</li>
+                <li >2</li>
+                <li >3</li>
+                <li >4</li>
+                <li >5</li>
+                <li >6</li>
+            </ul>
+
 
             <div className='prod'>
+
                 <div className='seta' > 
                     <div></div>
 
@@ -123,7 +168,7 @@ function FazerP() {
                     <button onClick={fechar} id='0'>V</button>
                 </div>
 
-                    <div className='detalhes' style={{ transform: verificador == false ? "translateY(0)" : "translateY(100%)", opacity: verificador !== false ? "0" : "1" , top: altura}} >
+                    <div className='detalhes' style={{ transform: verificador == false ? "translateY(0)" : "translateY(200%)", opacity: verificador !== false ? "0" : "1" , top: altura}} >
                         
                         {
                             escolher && 
@@ -150,22 +195,28 @@ function FazerP() {
 
 
             <div className='prod'>
-                <div className='Refrigerantes'>
                     <div className='seta' > 
                         <div></div>
 
                         <h1>Refrigerantes</h1>
                         
                         <button onClick={fechar} id='1'>V</button>
-
                     </div>
-                </div>
             </div>
                 
            
 
-                        <div className='confirmarPedidos'>
+                        <div style={{ transform: confPedidos != undefined ? "translateX(0px)" : "translateX(-100%)"}} className='confirmarPedidos'>
+                           
+                            <h1>Confirmar pedido</h1>
                             <h1 id='configmarPedidos'>teste</h1>
+
+                            <div onClick={confirmar} className='confirmar'>Confirmar pedidos</div>
+                            <div className='cancelar' onClick={
+                                function(){
+                                    setConfiPedidos(undefined)
+                                }
+                            }>Cancelar</div>
                         </div>
         </section>
 
